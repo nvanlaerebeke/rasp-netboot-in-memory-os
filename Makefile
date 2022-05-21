@@ -1,0 +1,5 @@
+.PHONY: create
+
+
+create:
+	./b

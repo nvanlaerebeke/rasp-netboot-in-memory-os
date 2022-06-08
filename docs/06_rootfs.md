@@ -53,10 +53,12 @@ Now install some stuff:
     cni-plugins \
     e2fsprogs \
     fcron \
+    logrotate \
     openssh \
     syslog-ng \
     syslog-ng-openrc
 
+rc-update add modules
 rc-update add sshd
 rc-update add zram-init
 rc-update add fcron
@@ -105,12 +107,8 @@ EOF
 
 Add the `NTP` update
 
-```console
-cat > /etc/periodic/hourly/do-ntp << EOF
-#!/bin/sh
-ntpd -d -q -n -p be.pool.ntp.org
-EOF
-chmod +x /etc/periodic/hourly/do-ntp
+```text
+echo "/15	*	*	*	*	ntpd -d -q -n -p be.pool.ntp.org" >> /etc/crontabs/root
 ```
 
 The raspberry PI is RAM constraint, for that the `zram` kernel extension can help a bit:
@@ -146,6 +144,20 @@ Enable USB:
 
 ```console
 echo "ftdi_sio" >> /etc/modules
+```
+
+Configure logrotate:
+
+```console
+cat > /etc/logrotate.d/power.conf <<EOF
+/var/log/* {
+    daily
+    rotate 2
+    missingok
+    compress
+    copytruncate
+}
+EOF
 ```
 
 ### K3s Installation

@@ -1,6 +1,7 @@
 # Root File System
 
-As a starting point 2 things will be needed, the minimal root file system downloadable from the alpine website and the kernel modules.
+As a starting point two things will be needed, the minimal root file system downloadable from the alpine website and the kernel modules.  
+
 For the kernel modules, copy them from the `tar.gz` extracted in the previous step (`initramfs`), it should be located in `./boot/modloop-rpi(4)`
 
 ## Root File System Files
@@ -32,16 +33,25 @@ Now set the PATH environment variable:
 export PATH=$PATH:/sbin:/bin
 ```
 
-Next lets install some packages that are handy to use (and don't take up to much space).  
+Next install some packages that are handy to use (and don't take up to much space).  
 
-First make sure name resolution works:
+First make sure name resolution works, update the `enp6s0` to match your machines interface name:
 
 ```console
 ifconfig
 udhcpc -i enp6s0 -f -q
 ```
 
-Now install some stuff:
+Now install some services and packages.  
+The services that are needed are:
+
+- openrc: the init system (like systemd)
+- zram: allows for memory compression
+- fcron: needed for logrotate
+- logrotate: to make sure our log files are cleaned up
+- openssh: make the device reachable using SSH
+- syslog-ng(-openrc): enable system logs
+- modules: this makes it so kernel modules are loaded at boot
 
 ```console
 /sbin/apk add --no-cache \
@@ -65,7 +75,7 @@ rc-update add fcron
 rc-update add syslog-ng boot
 ```
 
-Now set the root password:
+Set the root password:
 
 ```console
 passwd
@@ -84,14 +94,14 @@ Enable root login:
 echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 ```
 
-Set the host name:
+Set the host name, update name to match your own setup:
 
 ```console
 hostname power.crazyzone.be
 echo "power.crazyzone.be" > /etc/hostname
 ```
 
-Create the interfaces file:
+Create the interfaces file, that way the network can be started:
 
 ```console
 cat > /etc/network/interfaces << EOF
@@ -121,9 +131,9 @@ echo KERNEL=="zram0", ATTR{disksize}="250M",TAG+="systemd" > "/etc/udev/rules.d/
 wget -O /sbin/zram-init 'https://raw.githubusercontent.com/vaeth/zram-init/main/sbin/zram-init.in'  && chmod +x /sbin/zram-init
 ```
 
-OpenRC configuration:
+Configure cgroups:
 
-```
+```console
 echo "cgroup /sys/fs/cgroup cgroup defaults 0 0" >> /etc/fstab
 
 cat > /etc/cgconfig.conf <<EOF
@@ -140,29 +150,15 @@ mount {
 EOF
 ```
 
-Enable USB:
+Enable the USB serial port support:
 
 ```console
 echo "ftdi_sio" >> /etc/modules
 ```
 
-Configure logrotate:
-
-```console
-cat > /etc/logrotate.d/power.conf <<EOF
-/var/log/* {
-    daily
-    rotate 2
-    missingok
-    compress
-    copytruncate
-}
-EOF
-```
-
 ### K3s Installation
 
-Now add the script that will add K3s.
+Now add the script that will download and install K3s.  
 
 This script will run at start and bootstrap the PI:
 
@@ -188,14 +184,26 @@ Add the cluster information:
 mkdir -p /etc/rancher
 cat > /etc/rancher/master.json << EOF
 {
-    "master": "https://kvm.crazyzone.be:6443",
-    "token": "K10603fa719c8b6b49c1e6d6c4709f2a13de2ea2a8ea7140779afa664be2616f510::server:480128f36fedfdbd12cbb0bc2b5c89eb",
-    "node_name": "power.crazyzone.be"
+    "master": "<master node>",
+    "token": "<master token>
+    "node_name": "<this nodes name>"
 }
 EOF
 ```
 
-Now the actual script:
+The token for the master is located by default at `/var/lib/rancher/k3s/server/token`.  
+Add the contents of that file as the token value.  
+
+The next script is the place where the actual work will be done, steps that it does:
+
+- bring up the network
+- make sure `ftdi_sio` module is loaded
+- create the `tmpfs` storage for `k3s`
+- download and install `k3s` and let it join the cluster
+
+The reason for the `tmpfs` storage is due to the fact that containers cannot run on an `overlayfs` file system.  
+
+Add the script:
 
 ```console
 cat > /bin/power-startup << EOF
@@ -207,7 +215,7 @@ cat > /bin/power-startup << EOF
 #fix the time
 #ntpd -q -p pool.ntp.org
 
-#make sure the USB devices are detected
+#make sure the USB devices are detected (should already be done)
 modprobe ftdi_sio
 
 # Use a 1GB tmpfs to house the k3s:
@@ -227,7 +235,9 @@ EOF
 chmod +x /bin/power-startup
 ```
 
-Set the node password:
+Set the node password to always be the same, otherwise on next start-up the agent will not be able to join the cluster again due to having a different password.
+
+It's recommended to update the password here with a random other one for more security.
 
 ```console
 mkdir -p /etc/rancher/node
@@ -236,9 +246,9 @@ echo "7e4dee6768d0c6b4af9cb277e02028fe" > /etc/rancher/node/password
 
 ## Creating the Disk Image
 
-NOw that the new root file system has been created, an ext4 image needs to be created that will service as our file system.
+Now that the new root file system has been created, an ext4 image can be created that will service as our file system.
 
-Create the disk image:
+Create the disk image (500MB root file system):
 
 ```console
 dd if=/dev/zero of=~/rootfs.ext4 bs=10M count=50
@@ -272,12 +282,12 @@ sudo rsync -va ~/new_root/* ~/new_root_final/
 
 Now unmount and remove the loop device:
 
-```
+```console
 sudo umount ~/rootfs/new_root_final
 sudo losetup -d <device>
 ```
 
-Package the file into a `.tar.gz` so it's less data to transfer:
+Package the file into a `.tar.gz` so it's less data to transfer over `TFTP`:
 
 ```console
 tar cvf - ./rootfs.ext4 | gzip --best > rootfs.ext4.tar.gz
@@ -290,12 +300,3 @@ cp rootfs.ext4.tar.gz <tftp_root>/<pi id>/rootfs.ext4.tar.gz
 ```
 
 Start up the PI.
-
-## Cluster configuration
-
-Once the node is added to the cluster, make sure to set the taint and affinities.
-
-```console
-kubectl taint nodes power.crazyzone.be type=power:NoSchedule
-kubectl label nodes power.crazyzone.be type=power
-```

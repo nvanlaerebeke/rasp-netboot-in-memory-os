@@ -1,15 +1,17 @@
 # Initramfs
 
 The `initramfs` is the initial ram disk that will be loaded by the kernel.  
-This is what will bring the system alive.  
+This is what will bring the system to a running state.  
 
-In this case the extra step in the `initramfs` int script that must be done is getting the root file system.  
+In this case an extra step in the `initramfs` int script must be done, that is getting the root file system and making that the device being booted as there is no SD-card or hard drive present.  
 
+The way it is gotten is using the same `TFTP` server used then for the network boot.  
 Once the root file system is in ram it can be mounted and the root can be switch to that.
 
 ## Creating the `initramfs`
 
-Use the `initramfs` that came with the alpine kernel for the Raspberry PI, this can be downloaded from [the alpine website](https://www.alpinelinux.org/downloads/).  
+As a base, use the `initramfs` that came with the alpine kernel for the Raspberry PI, this can be downloaded from [the alpine website](https://www.alpinelinux.org/downloads/).  
+
 Extract the file and in the `boot` directory there will be a `initramfs-rpi(4)` image.  
 This is the one that will need to be modified.  
 
@@ -27,7 +29,7 @@ cd unpacked
 mv init init2
 ```
 
-Create a new `init` file that will get the root file system that will be used before the `init2` is done.  
+Create a new `init` file that will get the root file system from the `TFTP` server that will be used before the `init2` is done.  
 
 ```console
 cat > init << EOF
@@ -122,7 +124,9 @@ EOF
 chmod +x init
 ```
 
-A different `busybox` binary will also be required as provided version in the alpine image does not have `tftp` support:
+A different `busybox` binary will also be required as, the one provided in the alpine image does not have `TFTP` support.
+
+Instead of compiling it ourselves it can be downloaded from the `busybox` website:
 
 ```console
 curl -L 'https://www.busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-armv7l' > bin/busybox ; \

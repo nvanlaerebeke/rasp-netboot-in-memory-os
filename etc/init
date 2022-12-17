@@ -1,0 +1,92 @@
+#!/bin/busybox sh
+
+echo "Getting rootfs before the int starts..."
+/bin/busybox mkdir -p /usr/bin /usr/sbin /proc /sys/dev /media/cdrom /media/usb /tmp /run/cryptsetup
+
+# Spread out busybox symlinks and make them available without full path
+/bin/busybox --install -s
+
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
+[ -c /dev/null ] || mknod -m 666 /dev/null c 1 3
+
+mount -t sysfs -o noexec,nosuid,nodev sysfs /sys
+mount -t devtmpfs -o exec,nosuid,mode=0755,size=2M devtmpfs /dev 2>/dev/null 	|| mount -t tmpfs -o exec,nosuid,mode=0755,size=2M tmpfs /dev
+
+# Make sure /dev/kmsg is a device node. Writing to /dev/kmsg allows the use of the
+# earlyprintk kernel option to monitor early init progress. As above, the -c check
+# prevents an error if the device node has already been seeded.
+[ -c /dev/kmsg ] || mknod -m 660 /dev/kmsg c 1 11
+
+mount -t proc -o noexec,nosuid,nodev proc /proc
+# pty device nodes (later system will need it)
+[ -c /dev/ptmx ] || mknod -m 666 /dev/ptmx c 5 2
+[ -d /dev/pts ] || mkdir -m 755 /dev/pts
+mount -t devpts -o gid=5,mode=0620,noexec,nosuid devpts /dev/pts
+
+# shared memory area (later system will need it)
+[ -d /dev/shm ] || mkdir /dev/shm
+mount -t tmpfs -o nodev,nosuid,noexec shm /dev/shm
+
+clear
+
+echo "Bringing up network"
+INTERFACES=$(ifconfig | wc -l)
+while [ $INTERFACES -eq 0 ];
+do
+    sleep 1
+    ifconfig eth0 0.0.0.0 > /dev/null 2>&1
+    INTERFACES=$(ifconfig | wc -l)
+done
+
+sleep 5
+udhcpc -i eth0 -f -q
+
+SERIAL=$(cat /proc/cpuinfo | grep Serial | awk '{print $3}')
+SUBDIR=${SERIAL: -8}
+
+if [ ! -z "$ROOTFS" ];
+then
+    echo "Downloading rootfs from $ROOTFS\n"
+    curl -L -o "rootfs.ext4.tar.gz" "$ROOTFS" 
+fi
+
+#if [ ! -z "$ROOTFS_TFTP_FILE" ];
+#then
+#    if [ ! -z "$ROOTFS_TFTP_HOST" ];
+#    then
+#        echo "Downloading '$ROOTFS_TFTP_FILE' rootfs from '$ROOTFS_TFTP_HOST'"
+#        echo tftp -g -r "$ROOTFS_TFTP_FILE" "$ROOTFS_TFTP_HOST"
+#        tftp -g -r "$ROOTFS_TFTP_FILE" "$ROOTFS_TFTP_HOST"
+#    fi
+#fi
+
+if [ ! -f "rootfs.ext4.tar.gz" ];
+then
+    echo "Unable to find root filesystem, exiting to shell..."
+    exec /bin/busybox sh
+    exit
+fi
+
+tar xvf "rootfs.ext4.tar.gz"
+rm "rootfs.ext4.tar.gz"
+
+losetup -fP "rootfs.ext4"
+sleep 1
+DEVICE=$(losetup -a | grep rootfs.ext4 | awk -F ':' '{print $1}' | tr -d '\n')
+
+echo "Found device $DEVICE"
+export KOPT_root=$DEVICE
+
+echo "Rootfs is available, unmounting..."
+
+umount /sys
+umount /dev/shm
+umount /dev/pts
+umount /dev
+umount /proc
+
+#export KOPT_init="/bin/busybox"
+#export KOPT_init_args="sh"
+
+exec /init2

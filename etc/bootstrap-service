@@ -1,0 +1,9 @@
+#!/sbin/openrc-run
+
+BOOTSTRAP_PID="/run/bootstrap.pid"
+
+start() {
+  ebegin "Starting environment"
+  exec /bin/bootstrap | tee /var/log/bootstrap.log
+  eend \$?
+}

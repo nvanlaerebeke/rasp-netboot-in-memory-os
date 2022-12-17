@@ -1,0 +1,24 @@
+#!/bin/busybox sh
+
+if [ -f "/etc/bootstrap.conf" ];
+then
+    . /etc/bootstrap.conf
+else 
+    echo "No config file found, using env variables if set"
+fi
+
+if [ -z "$BOOTSTRAP_LOCATION" ];
+then
+    echo "nothing to bootstrap"
+    exit;
+fi
+
+echo "Fetching $BOOTSTRAP_LOCATION"
+
+curl -o /tmp/bootstrap -L "$BOOTSTRAP_LOCATION"
+chmod +x /tmp/bootstrap
+
+echo "Starting bootstrap..."
+exec /tmp/bootstrap
+
+echo "System bootstrap done"

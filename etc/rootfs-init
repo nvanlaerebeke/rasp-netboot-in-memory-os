@@ -1,0 +1,19 @@
+#!/bin/busybox sh
+
+#refresh the IP, needed to create /etc/resolv.conf
+# /etc/network/interfaces
+#ifconfig eth0 0.0.0.0
+#sleep 2
+#echo "Bring up localhost interface"
+#ifup lo
+#udhcpc eth0
+#sleep 2
+
+#echo "Restart networking"
+#/etc/init.d/networking restart
+
+#make sure the date is correct
+#ntpd -q -p pool.ntp.org
+
+# do the general init
+exec /sbin/init

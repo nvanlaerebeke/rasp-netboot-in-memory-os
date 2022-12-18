@@ -45,21 +45,21 @@ udhcpc -i eth0 -f -q
 SERIAL=$(cat /proc/cpuinfo | grep Serial | awk '{print $3}')
 SUBDIR=${SERIAL: -8}
 
-if [ ! -z "$ROOTFS" ];
+if [ ! -z "$ROOTFS_HTTP" ];
 then
-    echo "Downloading rootfs from $ROOTFS\n"
-    curl -L -o "rootfs.ext4.tar.gz" "$ROOTFS" 
+    echo "Downloading rootfs from $ROOTFS_HTTP\n"
+    wget "$ROOTFS_HTTP" -o "rootfs.ext4.tar.gz"
 fi
 
-#if [ ! -z "$ROOTFS_TFTP_FILE" ];
-#then
-#    if [ ! -z "$ROOTFS_TFTP_HOST" ];
-#    then
-#        echo "Downloading '$ROOTFS_TFTP_FILE' rootfs from '$ROOTFS_TFTP_HOST'"
-#        echo tftp -g -r "$ROOTFS_TFTP_FILE" "$ROOTFS_TFTP_HOST"
-#        tftp -g -r "$ROOTFS_TFTP_FILE" "$ROOTFS_TFTP_HOST"
-#    fi
-#fi
+if [ ! -z "$ROOTFS_TFTP_FILE" ];
+then
+    if [ ! -z "$ROOTFS_TFTP_HOST" ];
+    then
+        echo "Downloading '$ROOTFS_TFTP_FILE' rootfs from '$ROOTFS_TFTP_HOST'"
+        echo tftp -g -r "$ROOTFS_TFTP_FILE" "$ROOTFS_TFTP_HOST"
+        tftp -g -r "$ROOTFS_TFTP_FILE" "$ROOTFS_TFTP_HOST"
+    fi
+fi
 
 if [ ! -f "rootfs.ext4.tar.gz" ];
 then

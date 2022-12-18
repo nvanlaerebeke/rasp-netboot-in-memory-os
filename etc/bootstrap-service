@@ -2,8 +2,24 @@
 
 BOOTSTRAP_PID="/run/bootstrap.pid"
 
+depend() {
+	need net
+}
+
 start() {
-  ebegin "Starting environment"
+  ebegin "Starting bootstrap"
   exec /bin/bootstrap | tee /var/log/bootstrap.log
+  eend \$?
+}
+
+stop() {
+  ebegin "Killing bootstrap"
+  exec killall /bin/bootstrap
+  eend \$?
+}
+
+status() {
+  ebegin "Killing bootstrap"
+  exec echo "Status not supported"
   eend \$?
 }

@@ -11,7 +11,6 @@ SSH_PUB_KEY=$3
 #install needed packages
 /sbin/apk add --no-cache \
     vim \
-    bash \
     curl \
     openrc \
     jq \

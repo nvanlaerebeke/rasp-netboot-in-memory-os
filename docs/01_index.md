@@ -10,16 +10,16 @@ The minimum requirements are:
 
 ## End Goal
 
-The result should be a Raspberry PI that uses a `TFTP` server provided by the `DHCP` server to fetch the required resources and root file system.  
+The result should be a Raspberry PI that uses a `TFTP` server provided by the `DHCP` server to fetch the required resources and root file system (http or tftp).  
 
 This root file system will contain [Alpine Linux](https://www.alpinelinux.org/) with all the services required to connect to it using `SSH` and to keep it running (example logrotate, ntp, ...)
 
-Once the operating system has started it should automatically download and install [k3s](https://k3s.io/) kubernetes distribution and join the cluster.  
-
-Resources that need to be deployed on this node can then be added to the cluster using taints, toleration and affinity.
+Once the operating system has started it should automatically download and install a bootstrap executable.  
+In the example here this is a [k3s](https://k3s.io/) kubernetes distribution that will join an existing cluster.  
 
 ## Index
 
+- [Quickstart](02_quickstart.md)
 - [Alpine Linux](02_alpine_linux.md)
 - [Raspberry PI network boot](03_raspberry_pi_netboot.md)
 - [Initramfs](04_initramfs.md)

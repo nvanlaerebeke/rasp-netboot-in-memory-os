@@ -5,7 +5,9 @@ This repository contains documentation on how to boot a Raspberry PI from networ
 This is ideal for many `IOT` devices for several reasons.  
 
 - SD-cards are very unreliable and slow
-- Having the root file system on `NFS` can break easily due to a simple network interruption
+- Having the root file system on the network (example NFS/ISCSI) can break easily due to a simple network interruption
+- Easy to manage/update devices with just a restart
+
 
 The solution presented here is ideal for a lot of `IOT` applications that do not need huge amounts of RAM.  
 

@@ -1,6 +1,6 @@
 .PHONY: build rsync clean cleancache 
 
-RSYNC_TARGET:=kvm:/srv/tftp/457c5ec9/
+RSYNC_TARGET:=
 
 build:
 	./bin/build.sh

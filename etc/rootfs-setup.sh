@@ -15,6 +15,7 @@ SSH_PUB_KEY=$3
     openrc \
     jq \
     zram-init-openrc \
+    e2fsprogs-extra \
     cni-plugins \
     e2fsprogs \
     fcron \

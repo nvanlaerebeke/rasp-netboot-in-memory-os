@@ -23,5 +23,8 @@ function install_qemu_dependencies {
     fi
 
     info "Installing requirements to execute ARM excutables"
-    exec sudo apt install qemu-user qemu-user-static
+    
+    startDebug
+    sudo apt install qemu-user qemu-user-static
+    endDebug
 }

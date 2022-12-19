@@ -76,6 +76,11 @@ CMD_LINE_OPTION="modules=loop,squashfs,sd-mod,usb-storage overlaytmpfs=yes conso
 ROOTFS_SIZE=256
 
 #
+# Enabled/disable (1/0) colored output
+#
+COLOR=1
+
+#
 # Include the env file, any of the above settings can be overwritten
 #
 if [ -f "$ROOT/env" ];

@@ -33,7 +33,9 @@ function rootfs_build {
 
     #setup inside the chroot
     info "Setting up the the rootfs using chroot"
+    startDebug
     sudo chroot "$ROOTFS_BUILD_DIR" /rootfs-setup.sh "$HOSTNAME" "$PASSWORD" "$SSH_PUB_KEY"
+    endDebug
 
     #cleanup
     rm -f "$ROOTFS_BUILD_DIR/etc/resolv.conf" "$ROOTFS_BUILD_DIR/rootfs-setup.sh"
@@ -50,43 +52,57 @@ function rootfs_setup_env {
     if [ ! -f "$ALPINE_ROOTFS" ];
     then
         info "Downloading alpine root filesystem ($ALPINE_DOWNLOAD_URL_ROOTFS)"
+        startDebug
         curl -L "$ALPINE_DOWNLOAD_URL_ROOTFS" -o "$ALPINE_ROOTFS"
+        endDebug
     fi
 
     if [ -z "$(ls -A $ROOTFS_BUILD_DIR)" ];
     then
         info "Extracting alpine root filesystem (ALPINE_ROOTFS)"
+        startDebug
         tar -C "$ROOTFS_BUILD_DIR" -xvf "$ALPINE_ROOTFS"
+        endDebug
     fi
 }
 
 function rootfs_add_modules {
+    startDebug
     unsquashfs -d "$BUILD_DIR/modules" "$ALPINE_DIR/boot/modloop-rpi4"
     cp -R "$BUILD_DIR/modules/modules" "$ROOTFS_BUILD_DIR/lib/"
+    endDebug
 }
 
 function rootfs_package {
     info "Creating new rootfs"
+    startDebug
     dd if=/dev/zero of="$BUILD_DIR/rootfs.ext4" bs=1M count=$ROOTFS_SIZE
+    endDebug
     
     info "Formatting new rootfs as ext4"
+    startDebug
     mkfs.ext4 "$BUILD_DIR/rootfs.ext4"
+    endDebug
 
     sudo losetup -fP "$BUILD_DIR/rootfs.ext4"
     local LOOP_DEVICE=`losetup -a | grep -i "rootfs.ext4" | awk -F ':' '{print $1}'`
 
     mkdir "$BUILD_DIR/new_rootfs"
-    debug sudo mount -t ext4 "$LOOP_DEVICE" "$BUILD_DIR/new_rootfs"
     sudo mount -t ext4 "$LOOP_DEVICE" "$BUILD_DIR/new_rootfs"
 
     info "Adding content to new root filesystem"
     sudo chown -R root:root "$ROOTFS_BUILD_DIR"
+    
+    startDebug
     sudo rsync -va "$ROOTFS_BUILD_DIR/" "$BUILD_DIR/new_rootfs"
+    endDebug
 
     info "Unmount and remove temp device"
     sudo umount "$BUILD_DIR/new_rootfs"
     sudo losetup -d "$LOOP_DEVICE"
 
     info "Creating new rootfs archive..."
+    startDebug
     cd "$BUILD_DIR" && tar -cvf - "rootfs.ext4" | gzip --best > "$BUILD_DIR/rootfs.ext4.tar.gz" && cd -
+    endDebug
 }

@@ -33,3 +33,14 @@ To start the build, run:
 ./bin/build.sh
 ```
 
+## Testing
+
+A python script that reads out the serial port (/dev/ttyUSB0) is included in the `src` directory.
+
+Alternativly use the following python command:
+
+```python
+apk add --no-cache python3 py3-pip
+pip3 install pyserial
+python3 -m serial.tools.miniterm /dev/ttyUSB0 115200 --xonxoff
+```

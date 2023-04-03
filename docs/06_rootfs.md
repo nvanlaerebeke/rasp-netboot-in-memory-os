@@ -66,12 +66,14 @@ The services that are needed are:
     logrotate \
     openssh \
     syslog-ng \
-    syslog-ng-openrc
+    syslog-ng-openrc \
+    dcron-openrc
 
 rc-update add modules
 rc-update add sshd
 rc-update add zram-init
 rc-update add fcron
+rc-update add dcron
 rc-update add syslog-ng boot
 ```
 

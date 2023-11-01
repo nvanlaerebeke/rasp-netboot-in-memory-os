@@ -3,11 +3,28 @@
 The Raspberry PI 3B+ or higher does not use `PXE` boot but it is possible to `netboot` it.  
 For this you'll need access to your `DHCP` server configuration and have a `TFTP` server available.  
 
+## DHCP
+
+I won't go into much details of how to set up the `DHCP` server here, there are plenty of resources available on the NET for that.  
+This also differs from one setup to the next.  
+
+In my case I had a pfSense appliance that also did my `DHCP` where I enabled `TFTP` and set the IP address to the machine running the `tftp` server.  
+This option can be found under `Services` => `DHCP Server`
+
+## TFTP
+
 The `TFTP` server used in this project is `tftpd-hpa`.  
+To install this on ubuntu:
 
-I won't go into details of how to set up the `DHCP` server here, there are plenty of resources available on the NET for that.
+```console
+sudo apt install tftpd-hpa
+```
 
-Download the alpine Raspberry PI kernel from [the alpine website](https://www.alpinelinux.org/downloads/)
+By default the directory that contains the `tftp` data is `/srv/tftp`
+
+## TFTP Content
+
+As we'll be using Alpine Linux as a basis start by downloading the alpine Raspberry PI version from [the alpine website](https://www.alpinelinux.org/downloads/)
 
 Put the contents in the root of your `TFTP` server.  
 Optionally everything besides the `bootcode.bin` can be placed in a sub directory with as name the PI's serial number.  
@@ -70,7 +87,7 @@ In my case I ended up with:
 
 ## Enable `Netboot` on the Raspberry PI 3B+
 
-For this an SD-card will still be needed, start up the PI and update the `config.txt` file:
+For this a bootable PI (so with sd-card) will still be needed initially, start up the PI and update the `config.txt` file:
 
 ```console
 vim /boot/config.txt
@@ -86,17 +103,19 @@ This is because it's trying to mount a local root file system and there is none.
 
 ## Enable `NetBoot` on the Raspberry PI 4
 
-Follow the steps from:
+Follow the steps from, it's described in high detail to get it working there:
 
 https://linuxhit.com/raspberry-pi-pxe-boot-netbooting-a-pi-4-without-an-sd-card/
 
 ## Update the cmd.txt
 
-Edit the `cmdline.txt` with:
+Now in the copied files that are located on the `tftp` server, edit the `cmdline.txt` with:
 
 ```text
 modules=loop,squashfs,sd-mod,usb-storage quiet console=tty1 noquiet cgroup_memory=1 cgroup_enable=memory swapaccount=1
 ```
+
+If the default setup was followed the file should be located in `/srv/tftp/<optional serial>/cmdline.txt`
 
 The `cgroup` options are required when running containers and the `overlaytmpfs` setting will be used to use `overlayfs` for our root file system.
 
@@ -120,3 +139,6 @@ arm_64bit=1
 include usercfg.txt
 enable_uart=0
 ```
+
+The PI should now be able to succesfully boot from the network.
+

@@ -3,7 +3,7 @@
 RSYNC_TARGET:=
 
 build:
-	./bin/build.sh
+	docker run --rm -ti --name rasp-build -v `pwd`:/build -w "/build" --privileged ubuntu:22.04 bash /build/bin/build.sh
 
 rsync:
 	rsync -vvah ./dist/ "${RSYNC_TARGET}" --delete

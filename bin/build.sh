@@ -3,6 +3,9 @@ ROOT="$(realpath $(cd "$(dirname $(realpath "${BASH_SOURCE[0]}"))" >/dev/null 2>
 
 . $ROOT/bin/lib/functions.sh 
 
+info "Installing basic requirements"
+requirements
+
 info "Starting initramfs build"
 initramfs_build
 
@@ -16,15 +19,15 @@ echo ""
 echo ""
 echo ""
 
-info "Raspberry PI 4 netboot files written to '$DIST_DIR'"
+info "Raspberry PI 4 netboot files written to 'dist'"
 echo ""
 
 info "Updated initramfs is: "
-info "$DIST_DIR/boot/initramfs-rpi4"
+info "dist/boot/initramfs-rpi4"
 echo ""
 info "Root filesystem is:"
-info "$DIST_DIR/rootfs.ext4.tar.gz"
+info "dist/rootfs.ext4.tar.gz"
 
 echo ""
 
-info "Copy the '$DIST_DIR' files to the tftp server"
+info "Copy the 'dist' files to the tftp server"

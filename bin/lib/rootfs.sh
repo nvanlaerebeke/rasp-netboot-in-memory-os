@@ -34,7 +34,7 @@ function rootfs_build {
     #setup inside the chroot
     info "Setting up the the rootfs using chroot"
     startDebug
-    sudo chroot "$ROOTFS_BUILD_DIR" /rootfs-setup.sh "$HOSTNAME" "$PASSWORD" "$SSH_PUB_KEY"
+    chroot "$ROOTFS_BUILD_DIR" /rootfs-setup.sh "$HOSTNAME" "$PASSWORD" "$SSH_PUB_KEY"
     endDebug
 
     #cleanup
@@ -44,16 +44,14 @@ function rootfs_build {
 }
 
 function rootfs_setup_env {
-    install_qemu_dependencies
-
-    sudo rm -rf "$ROOTFS_BUILD_DIR"
+    rm -rf "$ROOTFS_BUILD_DIR"
     mkdir -p "$BUILD_DIR" "$ROOTFS_BUILD_DIR"
 
     if [ ! -f "$ALPINE_ROOTFS" ];
     then
         info "Downloading alpine root filesystem ($ALPINE_DOWNLOAD_URL_ROOTFS)"
         startDebug
-        curl -L "$ALPINE_DOWNLOAD_URL_ROOTFS" -o "$ALPINE_ROOTFS"
+        wget "$ALPINE_DOWNLOAD_URL_ROOTFS" -O "$ALPINE_ROOTFS"
         endDebug
     fi
 
@@ -84,22 +82,22 @@ function rootfs_package {
     mkfs.ext4 "$BUILD_DIR/rootfs.ext4"
     endDebug
 
-    sudo losetup -fP "$BUILD_DIR/rootfs.ext4"
+    losetup -fP "$BUILD_DIR/rootfs.ext4"
     local LOOP_DEVICE=`losetup -a | grep -i "rootfs.ext4" | awk -F ':' '{print $1}'`
 
     mkdir "$BUILD_DIR/new_rootfs"
-    sudo mount -t ext4 "$LOOP_DEVICE" "$BUILD_DIR/new_rootfs"
+    mount -t ext4 "$LOOP_DEVICE" "$BUILD_DIR/new_rootfs"
 
     info "Adding content to new root filesystem"
-    sudo chown -R root:root "$ROOTFS_BUILD_DIR"
+    chown -R root:root "$ROOTFS_BUILD_DIR"
     
     startDebug
-    sudo rsync -va "$ROOTFS_BUILD_DIR/" "$BUILD_DIR/new_rootfs"
+    rsync -va "$ROOTFS_BUILD_DIR/" "$BUILD_DIR/new_rootfs"
     endDebug
 
     info "Unmount and remove temp device"
-    sudo umount "$BUILD_DIR/new_rootfs"
-    sudo losetup -d "$LOOP_DEVICE"
+    umount "$BUILD_DIR/new_rootfs"
+    losetup -d "$LOOP_DEVICE"
 
     info "Creating new rootfs archive..."
     startDebug

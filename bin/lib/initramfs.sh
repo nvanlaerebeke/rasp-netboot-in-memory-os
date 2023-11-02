@@ -11,7 +11,7 @@ function initramfs_build {
     endDebug
     
     info "Removing stock initramfs-rpi4 ($INITRAMFS_BUILD_DIR/initramfs-rpi4)"
-    sudo rm -f "$INITRAMFS_BUILD_DIR/initramfs-rpi4"
+    rm -f "$INITRAMFS_BUILD_DIR/initramfs-rpi4"
 
     info "Adding custom init script"
     mv "$INITRAMFS_BUILD_DIR/init" "$INITRAMFS_BUILD_DIR/init2"
@@ -30,7 +30,7 @@ function initramfs_build {
 }
 
 function initramfs_setup_env {
-    sudo rm -rf "$BUILD_DIR"  "$ALPINE_DIR"
+    rm -rf "$BUILD_DIR"  "$ALPINE_DIR"
     mkdir -p "$ALPINE_DIR" "$BUILD_DIR" "$INITRAMFS_BUILD_DIR" 
 
     if [ ! -f "$ALPINE_KERNEL" ];

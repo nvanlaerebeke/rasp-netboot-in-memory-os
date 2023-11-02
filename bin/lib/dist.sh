@@ -1,6 +1,6 @@
 
 function dist {
-    sudo rm -rf "$DIST_DIR" 
+    rm -rf "$DIST_DIR" 
 
     info "Adding base alpine boot files"
     cp -R "$ALPINE_DIR" "$DIST_DIR"

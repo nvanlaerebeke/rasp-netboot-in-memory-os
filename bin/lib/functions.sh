@@ -3,6 +3,7 @@
 . "$ROOT/bin/lib/initramfs.sh"
 . "$ROOT/bin/lib/rootfs.sh"
 . "$ROOT/bin/lib/dist.sh"
+. "$ROOT/bin/lib/requirements.sh"
 
 function install_qemu_dependencies {
     if [ ! -f '/etc/os-release' ];
@@ -25,6 +26,6 @@ function install_qemu_dependencies {
     info "Installing requirements to execute ARM excutables"
     
     startDebug
-    sudo apt install qemu-user qemu-user-static
+    apt install -y qemu-user qemu-user-static
     endDebug
 }

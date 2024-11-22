@@ -21,18 +21,16 @@ info "Packaging..."
 dist
 
 echo ""
-echo ""
-echo ""
 
-info "Raspberry PI 4 netboot files written to 'dist'"
+info "Raspberry PI 4 netboot files written to '$DIST_DIR"
 echo ""
 
 info "Updated initramfs is: "
-info "dist/boot/initramfs-rpi4"
+info "$DIST_DIR/boot/initramfs-rpi"
 echo ""
 info "Root filesystem is:"
-info "dist/rootfs.ext4.tar.gz"
+info "$DIST_DIR/rootfs.ext4.tar.gz"
 
 echo ""
 
-info "Copy the 'dist' files to the tftp server"
+info "Copy the contents of '$DIST_DIR' to the tftp server"

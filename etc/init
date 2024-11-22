@@ -51,7 +51,7 @@ echo "TFTP ROOTFS: HOST => ${ROOTFS_TFTP_HOST}, PATH => ${ROOTFS_TFTP_FILE}"
 if [ ! -z "$ROOTFS_HTTP" ];
 then
     echo "Downloading rootfs from $ROOTFS_HTTP\n"
-    wget "$ROOTFS_HTTP" -o "rootfs.ext4.tar.gz"
+    curl -o "rootfs.ext4.tar.gz" "$ROOTFS_HTTP"
 fi
 
 if [ ! -z "$ROOTFS_TFTP_FILE" ];

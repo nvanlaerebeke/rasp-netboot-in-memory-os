@@ -27,13 +27,11 @@ function rootfs_build {
     cp "$ROOT/etc/bootstrap" "$ROOTFS_BUILD_DIR/bin/bootstrap"
     cp "$ROOT/etc/rcS" "$ROOTFS_BUILD_DIR/etc/init.d/"
     cp "$ROOT/etc/rootfs-init" "$ROOTFS_BUILD_DIR/init"
-    #cp "$ROOT/etc/cgconfig.conf" "$ROOTFS_BUILD_DIR/etc/cgconfig.conf"
 
     echo "BOOTSTRAP_LOCATION=$BOOTSTRAP_LOCATION" > "$ROOTFS_BUILD_DIR/etc/bootstrap.conf"
 
     rootfs_add_modules
 
-    #echo "cgroup /sys/fs/cgroup cgroup defaults 0 0" >> "$ROOTFS_BUILD_DIR/etc/fstab"
     echo "ftdi_sio" >> "$ROOTFS_BUILD_DIR/etc/modules"
 
     #set up nameservers for apk install
@@ -53,12 +51,17 @@ function rootfs_build {
 
 function rootfs_add_modules {
     startDebug
-    unsquashfs -d "$BUILD_DIR/modules" "$ALPINE_DIR/boot/modloop-rpi4"
+    unsquashfs -d "$BUILD_DIR/modules" "$ALPINE_DIR/boot/modloop-rpi"
     cp -R "$BUILD_DIR/modules/modules" "$ROOTFS_BUILD_DIR/lib/"
     endDebug
 }
 
 function rootfs_package {
+    info "Verify there are no dangling loop devices points"
+    startDebug
+    losetup | grep rootfs.ext4 | awk '{print $1}' | xargs -r losetup -d $1
+    endDebug
+
     info "Creating new rootfs"
     startDebug
     dd if=/dev/zero of="$BUILD_DIR/rootfs.ext4" bs=1M count=$ROOTFS_SIZE
@@ -69,8 +72,9 @@ function rootfs_package {
     mkfs.ext4 "$BUILD_DIR/rootfs.ext4"
     endDebug
 
+    info "Mounting new filesystem $BUILD_DIR/rootfs.ext4 using a loop device"
     losetup -fP "$BUILD_DIR/rootfs.ext4"
-    local LOOP_DEVICE=`losetup -a | grep -i "rootfs.ext4" | awk -F ':' '{print $1}'`
+    local LOOP_DEVICE=`losetup -a | grep -i "$BUILD_DIR/rootfs.ext4" | awk -F ':' '{print $1}'`
 
     mkdir "$BUILD_DIR/new_rootfs"
     mount -t ext4 "$LOOP_DEVICE" "$BUILD_DIR/new_rootfs"

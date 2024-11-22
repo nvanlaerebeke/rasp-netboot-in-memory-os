@@ -1,5 +1,5 @@
 function requirements {
-    local PACKAGES=( "curl" "wget" "cpio" "squashfs-tools" "rsync" "qemu-user" "qemu-user-static" )
+    local PACKAGES=( "curl" "cpio" "squashfs-tools" "rsync" "qemu-user" "qemu-user-static" "ca-certificates" )
     
     # Loop through each package and check if it's installed
     for package in "${PACKAGES[@]}"; do
@@ -34,6 +34,6 @@ function install_requirements {
     
     startDebug
     apt update
-    apt install -y curl wget cpio squashfs-tools rsync qemu-user qemu-user-static 
+    apt install -y curl cpio squashfs-tools rsync qemu-user qemu-user-static 
     endDebug
 }

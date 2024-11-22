@@ -130,26 +130,7 @@ mkdir -p /etc/udev/rules.d
 echo "zram" > /etc/modules-load.d/zram.conf
 echo "options zram num_devices=1" > /etc/modprobe.d/zram.conf
 echo KERNEL=="zram0", ATTR{disksize}="250M",TAG+="systemd" > "/etc/udev/rules.d/99-zram.rules"
-wget -O /sbin/zram-init 'https://raw.githubusercontent.com/vaeth/zram-init/main/sbin/zram-init.in'  && chmod +x /sbin/zram-init
-```
-
-Configure cgroups:
-
-```console
-echo "cgroup /sys/fs/cgroup cgroup defaults 0 0" >> /etc/fstab
-
-cat > /etc/cgconfig.conf <<EOF
-mount {
-  cpuacct = /cgroup/cpuacct;
-  memory = /cgroup/memory;
-  devices = /cgroup/devices;
-  freezer = /cgroup/freezer;
-  net_cls = /cgroup/net_cls;
-  blkio = /cgroup/blkio;
-  cpuset = /cgroup/cpuset;
-  cpu = /cgroup/cpu;
-}
-EOF
+wget -O /sbin/zram-init 'https://raw.githubusercontent.com/vaeth/zram-init/main/sbin/zram-init.in' && chmod +x /sbin/zram-init
 ```
 
 Enable the USB serial port support:

@@ -2,16 +2,16 @@
 function initramfs_build {
     initramfs_setup_env
 
-    cp "$ALPINE_DIR/boot/initramfs-rpi4" "$INITRAMFS_BUILD_DIR"
+    cp "$ALPINE_DIR/boot/initramfs-rpi" "$INITRAMFS_BUILD_DIR"
     
-    info "Extracting initramfs-rpi4"
+    info "Extracting initramfs-rpi"
     
     startDebug
-    cd $INITRAMFS_BUILD_DIR && zcat initramfs-rpi4 | cpio -idmv && cd -
+    cd $INITRAMFS_BUILD_DIR && zcat initramfs-rpi | cpio -idmv && cd -
     endDebug
     
-    info "Removing stock initramfs-rpi4 ($INITRAMFS_BUILD_DIR/initramfs-rpi4)"
-    rm -f "$INITRAMFS_BUILD_DIR/initramfs-rpi4"
+    info "Removing stock initramfs-rpi ($INITRAMFS_BUILD_DIR/initramfs-rpi)"
+    rm -f "$INITRAMFS_BUILD_DIR/initramfs-rpi"
 
     info "Adding custom init script"
     mv "$INITRAMFS_BUILD_DIR/init" "$INITRAMFS_BUILD_DIR/init2"
@@ -48,10 +48,10 @@ function initramfs_setup_env {
 }
 
 function initramfs_package {
-    info "Creating new initramfs-rpi4 ($BUILD_DIR/initramfs-rpi4)"
-    rm -f "$BUILD_DIR/initramfs-rpi4"
+    info "Creating new initramfs-rpi ($BUILD_DIR/initramfs-rpi)"
+    rm -f "$BUILD_DIR/initramfs-rpi"
     
     startDebug
-    cd "$INITRAMFS_BUILD_DIR" && find . | cpio -ov --format=newc | gzip --best > "$BUILD_DIR/initramfs-rpi4" && cd -
+    cd "$INITRAMFS_BUILD_DIR" && find . | cpio -ov --format=newc | gzip --best > "$BUILD_DIR/initramfs-rpi" && cd -
     endDebug
 }

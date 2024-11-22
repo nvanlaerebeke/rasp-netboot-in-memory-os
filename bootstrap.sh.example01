@@ -1,38 +1,122 @@
 #!/bin/sh
 set -e
 
+#
+# K3s install script to download, can be http(s) or tftp://
+#
+K3S_INSTALL_SCRIPT=https://get.k3s.io/
+
+#
+# Location to download the k3s binary from
+# When filled in the binary from this location will be used instead of automatically downloading with the install script
+# See INSTALL_K3S_SKIP_DOWNLOAD in the k3s documentation for more information
+# 
+# Urls can be http(s):// or tftp://
+#
+K3S_BINARY=
+
+#
+# K3s master node to connect this agent to
+#
 K3S_MASTER=https://master.example.com:6443
-#token can be found in /var/lib/rancher/k3s/server/node-token
+
+#
+# The master token that's needed to join the cluster
+# By default, can be located at: /var/lib/rancher/k3s/server/token
+#
 K3S_TOKEN=
-K3S_NODE_NAME=node.example.com
-VERSION="v1.25.3+k3s1"
+
+#
+# Node name to use for this agent
+#
+K3S_NODE_NAME=agent01.example.com
+
+#
+# When K3S_BINARY is not filled in, the version to automatically download with the k3s installs script
+#
+#VERSION="v1.25.3+k3s1"
+VERSION=
+
+#
+# Size of the tmpfs to use where the files for rancher (k3s) are stored
+#
+# By default this is /var/lib/rancher 
+#
+VAR_RANCHER_SIZE=1500M
+
+#
+# Agent token/password
+# This needs to always be the same, otherwise the agent will not be able to re-join after a restart
+#
+AGENT_PASSWORD=7e4dee6768d0c6b4af9cb277e02028fe
+
+#
+# Taint and label to use
+# This is to limit what can be deployed to this agent
+#
+TAINT_AND_LABEL=rasp
+
+if [ -z "$K3S_TOKEN" ]; then 
+    echo "K3S_TOKEN not provided, please fill the master token"
+    exit 1
+fi
+
+if [ -z "$AGENT_PASSWORD" ]; then
+    echo "AGENT_PASSWORD not provided, please fill in a password for the agent"
+    exit 1
+fi
 
 #make sure the time is set correctly
 echo "Fixing date/time"
 ntpd -d -q -n -p pool.ntp.org
 
 #make sure the USB devices are detected (should already be done)
+#this is only needed for services that need serial USB support
 echo "Loading ftdi_sio..."
 modprobe ftdi_sio
 
-# Use a 1,5GB tmpfs to house the k3s:
+# Use a tmpfs to house the k3s files:
 TMPFS_MNT_POINTS=`mount | grep rancher | wc -l`
 if [ $TMPFS_MNT_POINTS -eq 0 ];
 then
     echo "Creating mount point for k3s..."
     mkdir -p /var/lib/rancher
-    mount -t tmpfs -o size=1500M tmpfs /var/lib/rancher
+    mount -t tmpfs -o size=$VAR_RANCHER_SIZE tmpfs /var/lib/rancher
 else
     echo "mountpoint for k3s already exists (/var/lib/rancher)"
 fi
 
 echo "Setting node password..."
 mkdir -p /etc/rancher/node
-echo "7e4dee6768d0c6b4af9cb277e02028fe" > /etc/rancher/node/password
+echo "$AGENT_PASSWORD" > /etc/rancher/node/password
 
 echo "To install k3s with the script from the website a different version of grep is needed"
 echo "Installing grep..."
 apk add grep --no-cache
 
+INSTALL_K3S_SKIP_DOWNLOAD=false
+if [ ! -z "$K3S_BINARY" ]; then
+    echo "Downloading k3s from custom location ($K3S_BINARY)"
+    curl -o /usr/local/bin/k3s -L "$K3S_BINARY" 
+    INSTALL_K3S_SKIP_DOWNLOAD=true
+fi
+
 echo "Installing k3s..."
-curl -sfL https://get.k3s.io | K3S_URL="$K3S_MASTER" K3S_TOKEN="$K3S_TOKEN" K3S_NODE_NAME="$K3S_NODE_NAME" INSTALL_K3S_VERSION="$VERSION" sh -
+echo "Getting install script from $K3S_INSTALL_SCRIPT"
+curl -o /tmp/k3s-install -sfL $K3S_INSTALL_SCRIPT 
+chmod +x /tmp/k3s-install
+
+export INSTALL_K3S_SKIP_DOWNLOAD=false
+export K3S_URL="$K3S_MASTER"
+export K3S_TOKEN="$K3S_TOKEN"
+export K3S_NODE_NAME="$K3S_NODE_NAME"
+export INSTALL_K3S_VERSION="$VERSION"
+
+echo "Running k3s installation"
+if [ ! -z "$TAINT_AND_LABEL" ]; then
+    echo "Taint/label provided, using: $TAINT_AND_LABEL"
+    exec /tmp/k3s-install --node-taint "type=$TAINT_AND_LABEL:NoSchedule" --node-label "type=$TAINT_AND_LABEL"
+else
+    echo "No taint/label provided"
+    exec /tmp/k3s-install
+fi

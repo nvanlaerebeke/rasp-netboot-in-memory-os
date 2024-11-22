@@ -1,5 +1,5 @@
-# Use Ubuntu 22.04 as the base image
-FROM ubuntu:22.04
+# Use Ubuntu 24.04 as the base image
+FROM ubuntu:24.04
 
 # Set environment variables to ensure non-interactive mode for APT
 ENV DEBIAN_FRONTEND=noninteractive
@@ -15,7 +15,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         make \
         curl \
-        wget \
+        ca-certificates \
         cpio \
         squashfs-tools \
         rsync \

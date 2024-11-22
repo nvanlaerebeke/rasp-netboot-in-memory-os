@@ -14,7 +14,7 @@ function build_cache {
     then
         info "Downloading alpine root filesystem ($ALPINE_DOWNLOAD_URL_ROOTFS)"
         startDebug
-        wget "$ALPINE_DOWNLOAD_URL_ROOTFS" -O "$ALPINE_ROOTFS"
+        curl -o "$ALPINE_ROOTFS" "$ALPINE_DOWNLOAD_URL_ROOTFS"
         endDebug
     fi
 
@@ -30,7 +30,7 @@ function build_cache {
     then
         info "Downloading custom busybox with tftp support ($BUSYBOX_DOWNLOAD_UR)"
         startDebug
-        wget "$BUSYBOX_DOWNLOAD_URL" -O "$TEMP/busybox" 
+        curl -o "$TEMP/busybox" "$BUSYBOX_DOWNLOAD_URL"
         chmod +x "$TEMP/busybox"
         endDebug
     fi

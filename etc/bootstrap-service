@@ -9,17 +9,17 @@ depend() {
 start() {
   ebegin "Starting bootstrap"
   exec /bin/bootstrap | tee /var/log/bootstrap.log
-  eend \$?
+  eend $?
 }
 
 stop() {
   ebegin "Killing bootstrap"
   exec killall /bin/bootstrap
-  eend \$?
+  eend $?
 }
 
 status() {
   ebegin "Killing bootstrap"
   exec echo "Status not supported"
-  eend \$?
+  eend $?
 }

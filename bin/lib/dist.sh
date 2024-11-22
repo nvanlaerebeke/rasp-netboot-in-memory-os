@@ -6,8 +6,8 @@ function dist {
     rsync -vva --delete "$ALPINE_DIR/" "$DIST_DIR"
     
     info "Adding custom initramfs..."
-    rm -f "$DIST_DIR/boot/initramfs-rpi4"
-    cp "$BUILD_DIR/initramfs-rpi4" "$DIST_DIR/boot/initramfs-rpi4"
+    rm -f "$DIST_DIR/boot/initramfs-rpi"
+    cp "$BUILD_DIR/initramfs-rpi" "$DIST_DIR/boot/initramfs-rpi"
 
     info "Adding rootfs..."
     cp "$BUILD_DIR/rootfs.ext4.tar.gz" "$DIST_DIR"
@@ -26,7 +26,7 @@ function dist {
     echo "$CMD_LINE_OPTION" > "$DIST_DIR/cmdline.txt"
 
     if [ -f "$ROOT/bootstrap.sh" ]; then
-        info "Adding existing bootstrap.sh to the tftp root"r
+        info "Adding existing bootstrap.sh to the tftp root"
         /bin/cp -f "$ROOT/bootstrap.sh" "$DIST_DIR/bootstrap.sh"
     fi
 }

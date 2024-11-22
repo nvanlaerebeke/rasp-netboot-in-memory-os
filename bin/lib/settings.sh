@@ -1,14 +1,14 @@
 #
 # Alpine kernel download URL
 #
-ALPINE_DOWNLOAD_URL_KERNEL=https://dl-cdn.alpinelinux.org/alpine/v3.17/releases/armv7/alpine-rpi-3.17.0-armv7.tar.gz
+ALPINE_DOWNLOAD_URL_KERNEL=https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/aarch64/alpine-rpi-3.20.3-aarch64.tar.gz
 
 #
 # Alpine mini root filesystem download URL
 # 
 # Note: Make sure this is of the same version as the kernel release
 #
-ALPINE_DOWNLOAD_URL_ROOTFS=https://dl-cdn.alpinelinux.org/alpine/v3.17/releases/armv7/alpine-minirootfs-3.17.0-armv7.tar.gz
+ALPINE_DOWNLOAD_URL_ROOTFS=https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/aarch64/alpine-minirootfs-3.20.3-aarch64.tar.gz
 
 #
 # Busybox download URL of a version that supports tftp 
@@ -74,7 +74,7 @@ CMD_LINE_OPTION="modules=loop,squashfs,sd-mod,usb-storage quiet console=tty1 ove
 #
 # Root filesystem size in megabyte
 #
-ROOTFS_SIZE=256
+ROOTFS_SIZE=300
 
 #
 # Enabled/disable (1/0) colored output

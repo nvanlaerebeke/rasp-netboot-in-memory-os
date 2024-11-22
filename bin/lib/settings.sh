@@ -66,9 +66,10 @@ DIST_DIR=$ROOT/dist
 #
 #   cgroup_memory=1
 #   cgroup_enable=memory
+#   cgroup_enable=cpuset
 #   swapaccount=1
 #
-CMD_LINE_OPTION="modules=loop,squashfs,sd-mod,usb-storage overlaytmpfs=yes console=tty1 cgroup_memory=1 cgroup_enable=memory swapaccount=1"
+CMD_LINE_OPTION="modules=loop,squashfs,sd-mod,usb-storage quiet console=tty1 overlaytmpfs=yes cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1 swapaccount=1"
 
 #
 # Root filesystem size in megabyte

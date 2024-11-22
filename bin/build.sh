@@ -1,10 +1,15 @@
 #!/bin/bash
+set -e
+
 ROOT="$(realpath $(cd "$(dirname $(realpath "${BASH_SOURCE[0]}"))" >/dev/null 2>&1 && pwd)/../)"
 
 . $ROOT/bin/lib/functions.sh 
 
 info "Installing basic requirements"
 requirements
+
+info "Building cache"
+build_cache
 
 info "Starting initramfs build"
 initramfs_build

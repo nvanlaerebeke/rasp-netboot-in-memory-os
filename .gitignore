@@ -3,6 +3,7 @@
 dist
 temp
 env
+bootstrap.sh
 
 # VSCode
 .vscode/*

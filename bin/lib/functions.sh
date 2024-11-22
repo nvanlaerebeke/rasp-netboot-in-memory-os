@@ -5,27 +5,33 @@
 . "$ROOT/bin/lib/dist.sh"
 . "$ROOT/bin/lib/requirements.sh"
 
-function install_qemu_dependencies {
-    if [ ! -f '/etc/os-release' ];
+
+function build_cache {
+    rm -rf "$ROOTFS_BUILD_DIR"
+    mkdir -p "$BUILD_DIR" "$ROOTFS_BUILD_DIR"
+
+    if [ ! -f "$ALPINE_ROOTFS" ];
     then
-        error "/etc/os-release does not exist, unknown OS, Make sure qemu-user-static is installed to run ARM binaries on x86"
+        info "Downloading alpine root filesystem ($ALPINE_DOWNLOAD_URL_ROOTFS)"
+        startDebug
+        wget "$ALPINE_DOWNLOAD_URL_ROOTFS" -O "$ALPINE_ROOTFS"
+        endDebug
     fi
 
-    source "/etc/os-release"
-
-    if [ -z "$NAME" ];
+    if [ -z "$(ls -A $ROOTFS_BUILD_DIR)" ];
     then
-        error "NAME not set in the os-release file"
+        info "Extracting alpine root filesystem ($ALPINE_ROOTFS) to $ROOTFS_BUILD_DIR"
+        startDebug
+        tar -C "$ROOTFS_BUILD_DIR" -xvf "$ALPINE_ROOTFS"
+        endDebug
     fi
 
-    if [ "$NAME" != "Ubuntu" ];
+    if [ ! -f "$TEMP/busybox" ];
     then
-        error "operating system $NAME is not 'Ubuntu'"
+        info "Downloading custom busybox with tftp support ($BUSYBOX_DOWNLOAD_UR)"
+        startDebug
+        wget "$BUSYBOX_DOWNLOAD_URL" -O "$TEMP/busybox" 
+        chmod +x "$TEMP/busybox"
+        endDebug
     fi
-
-    info "Installing requirements to execute ARM excutables"
-    
-    startDebug
-    apt install -y qemu-user qemu-user-static
-    endDebug
 }

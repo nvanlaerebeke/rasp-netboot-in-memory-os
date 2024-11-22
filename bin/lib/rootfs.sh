@@ -1,10 +1,18 @@
 
 function rootfs_build {
-    rootfs_setup_env
-
     info "Adding custom changes to alpine mini root filesystem..."
 
-    mkdir -p "$ROOTFS_BUILD_DIR/etc/udev/rules.d/"
+    mkdir -p \
+        "$ROOTFS_BUILD_DIR/etc/udev/rules.d/" \
+        "$ROOTFS_BUILD_DIR/etc/network" \
+        "$ROOTFS_BUILD_DIR/etc/periodic/hourly/" \
+        "$ROOTFS_BUILD_DIR/etc/modprobe.d" \
+        "$ROOTFS_BUILD_DIR/etc/modules-load.d/" \
+        "$ROOTFS_BUILD_DIR/sbin" \
+        "$ROOTFS_BUILD_DIR/etc/init.d" \
+        "$ROOTFS_BUILD_DIR/init" \
+        "$ROOTFS_BUILD_DIR/etc/" \
+        "$ROOTFS_BUILD_DIR/bin"
 
     cp "$ROOT/etc/rootfs-setup.sh" "$ROOTFS_BUILD_DIR"
     cp "$ROOT/etc/interfaces" "$ROOTFS_BUILD_DIR/etc/network/interfaces"
@@ -19,13 +27,13 @@ function rootfs_build {
     cp "$ROOT/etc/bootstrap" "$ROOTFS_BUILD_DIR/bin/bootstrap"
     cp "$ROOT/etc/rcS" "$ROOTFS_BUILD_DIR/etc/init.d/"
     cp "$ROOT/etc/rootfs-init" "$ROOTFS_BUILD_DIR/init"
-    cp "$ROOT/etc/cgconfig.conf" "$ROOTFS_BUILD_DIR/etc/cgconfig.conf"
+    #cp "$ROOT/etc/cgconfig.conf" "$ROOTFS_BUILD_DIR/etc/cgconfig.conf"
 
     echo "BOOTSTRAP_LOCATION=$BOOTSTRAP_LOCATION" > "$ROOTFS_BUILD_DIR/etc/bootstrap.conf"
 
     rootfs_add_modules
 
-    echo "cgroup /sys/fs/cgroup cgroup defaults 0 0" >> "$ROOTFS_BUILD_DIR/etc/fstab"
+    #echo "cgroup /sys/fs/cgroup cgroup defaults 0 0" >> "$ROOTFS_BUILD_DIR/etc/fstab"
     echo "ftdi_sio" >> "$ROOTFS_BUILD_DIR/etc/modules"
 
     #set up nameservers for apk install
@@ -41,27 +49,6 @@ function rootfs_build {
     rm -f "$ROOTFS_BUILD_DIR/etc/resolv.conf" "$ROOTFS_BUILD_DIR/rootfs-setup.sh"
 
     rootfs_package
-}
-
-function rootfs_setup_env {
-    rm -rf "$ROOTFS_BUILD_DIR"
-    mkdir -p "$BUILD_DIR" "$ROOTFS_BUILD_DIR"
-
-    if [ ! -f "$ALPINE_ROOTFS" ];
-    then
-        info "Downloading alpine root filesystem ($ALPINE_DOWNLOAD_URL_ROOTFS)"
-        startDebug
-        wget "$ALPINE_DOWNLOAD_URL_ROOTFS" -O "$ALPINE_ROOTFS"
-        endDebug
-    fi
-
-    if [ -z "$(ls -A $ROOTFS_BUILD_DIR)" ];
-    then
-        info "Extracting alpine root filesystem (ALPINE_ROOTFS)"
-        startDebug
-        tar -C "$ROOTFS_BUILD_DIR" -xvf "$ALPINE_ROOTFS"
-        endDebug
-    fi
 }
 
 function rootfs_add_modules {

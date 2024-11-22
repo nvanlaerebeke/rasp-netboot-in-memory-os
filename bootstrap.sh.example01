@@ -1,0 +1,38 @@
+#!/bin/sh
+set -e
+
+K3S_MASTER=https://master.example.com:6443
+#token can be found in /var/lib/rancher/k3s/server/node-token
+K3S_TOKEN=
+K3S_NODE_NAME=node.example.com
+VERSION="v1.25.3+k3s1"
+
+#make sure the time is set correctly
+echo "Fixing date/time"
+ntpd -d -q -n -p pool.ntp.org
+
+#make sure the USB devices are detected (should already be done)
+echo "Loading ftdi_sio..."
+modprobe ftdi_sio
+
+# Use a 1,5GB tmpfs to house the k3s:
+TMPFS_MNT_POINTS=`mount | grep rancher | wc -l`
+if [ $TMPFS_MNT_POINTS -eq 0 ];
+then
+    echo "Creating mount point for k3s..."
+    mkdir -p /var/lib/rancher
+    mount -t tmpfs -o size=1500M tmpfs /var/lib/rancher
+else
+    echo "mountpoint for k3s already exists (/var/lib/rancher)"
+fi
+
+echo "Setting node password..."
+mkdir -p /etc/rancher/node
+echo "7e4dee6768d0c6b4af9cb277e02028fe" > /etc/rancher/node/password
+
+echo "To install k3s with the script from the website a different version of grep is needed"
+echo "Installing grep..."
+apk add grep --no-cache
+
+echo "Installing k3s..."
+curl -sfL https://get.k3s.io | K3S_URL="$K3S_MASTER" K3S_TOKEN="$K3S_TOKEN" K3S_NODE_NAME="$K3S_NODE_NAME" INSTALL_K3S_VERSION="$VERSION" sh -

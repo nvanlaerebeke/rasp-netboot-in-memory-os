@@ -1,6 +1,6 @@
 #!/bin/busybox sh
 
-echo "Getting rootfs before the int starts..."
+echo "Getting rootfs before the init starts..."
 /bin/busybox mkdir -p /usr/bin /usr/sbin /proc /sys/dev /media/cdrom /media/usb /tmp /run/cryptsetup
 
 # Spread out busybox symlinks and make them available without full path
@@ -44,6 +44,9 @@ udhcpc -i eth0 -f -q
 
 SERIAL=$(cat /proc/cpuinfo | grep Serial | awk '{print $3}')
 SUBDIR=${SERIAL: -8}
+
+echo "HTTP ROOTFS: ${ROOTFS_HTTP}"
+echo "TFTP ROOTFS: HOST => ${ROOTFS_TFTP_HOST}, PATH => ${ROOTFS_TFTP_FILE}"
 
 if [ ! -z "$ROOTFS_HTTP" ];
 then

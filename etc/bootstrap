@@ -14,7 +14,6 @@ then
 fi
 
 echo "Fetching $BOOTSTRAP_LOCATION"
-
 curl -o /tmp/bootstrap -L "$BOOTSTRAP_LOCATION"
 chmod +x /tmp/bootstrap
 

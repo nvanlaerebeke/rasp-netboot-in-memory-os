@@ -17,20 +17,17 @@ function initramfs_build {
     mv "$INITRAMFS_BUILD_DIR/init" "$INITRAMFS_BUILD_DIR/init2"
     rm -f "$INITRAMFS_BUILD_DIR/init"
     cp "$ROOT/etc/init" "$INITRAMFS_BUILD_DIR/init"
-    #cp "$ROOT/etc/init2" "$INITRAMFS_BUILD_DIR/init2"
     chmod +x "$INITRAMFS_BUILD_DIR/init"
 
     info "Adding custom busybox binary with tftp support..."
     startDebug
-    curl -L "$BUSYBOX_DOWNLOAD_URL" > "$INITRAMFS_BUILD_DIR/bin/busybox" 
-    chmod +x "$INITRAMFS_BUILD_DIR/bin/busybox"
+    /bin/cp -f "${TEMP}/busybox" "$INITRAMFS_BUILD_DIR/bin/busybox"
     endDebug
 
     initramfs_package
 }
 
 function initramfs_setup_env {
-    rm -rf "$BUILD_DIR"  "$ALPINE_DIR"
     mkdir -p "$ALPINE_DIR" "$BUILD_DIR" "$INITRAMFS_BUILD_DIR" 
 
     if [ ! -f "$ALPINE_KERNEL" ];
